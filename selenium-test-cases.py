@@ -4,9 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-
 import time
+
 # login 
 print("Test case 1: Loging in")
 driver = webdriver.Chrome()
@@ -16,18 +15,62 @@ print(driver.title)
 #search_bar = driver.find_element_by_name("q")
 driver.get("http://localhost:8069/web/login")
 print("Able to access the login page")
-
 username = wait.until(EC.visibility_of_element_located((By.NAME, "login")))
 username.clear()
 username.send_keys("hiyunfengzhao@gmail.com")
 print("Able to type user name")
-
 password = wait.until(EC.visibility_of_element_located((By.NAME, "password")))
 password.clear()
 password.send_keys("252915967")
 print("Able to type password")
-password.send_keys(Keys.RETURN)
 time.sleep(3)
+password.send_keys(Keys.RETURN)
+
+print("Test case 2: Positive - Create a doctor")
+driver.get("http://localhost:8069/web#cids=1&menu_id=285&action=395&model=hospital.patient&view_type=list")
+time.sleep(3)
+doctors_button = driver.find_element(By.XPATH, "//button[@title='Doctors']")
+doctors_button.click()
+print("Click Doctors button")
+dropdown_menu_item = wait.until(EC.visibility_of_element_located((By.XPATH, "//a[@data-menu-xmlid='om_hospital.menu_doctor']")))
+dropdown_menu_item.click()
+time.sleep(3)
+create_button = driver.find_element(By.XPATH, "//button[normalize-space()='Create']")
+print("Click Create button")
+create_button.click()
+time.sleep(3)
+webdriver.ActionChains(driver).send_keys("John Doe").perform()
+save_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Save')]")
+print("Click Save button and save Dr.John Doe ")
+save_button.click()
+time.sleep(3)
+doctors_button.click()
+time.sleep(3)
+driver.find_element(By.LINK_TEXT, "Doctors").click()
+time.sleep(3)
+doctor_name_john_doe = driver.find_elements(By.XPATH, "//*[contains(text(), 'John Doe')]")
+if doctor_name_john_doe:
+    print("Test case 2 passing: Dr.John Doe is added and found on the page.")
+else:
+    print("Test case 2 not passing: Dr.John Doe is not added and not found on the page.")
+time.sleep(3)
+
+print("Test case 3: Negative - Create a doctor with invalid name")
+doctors_button.click()
+time.sleep(3)
+driver.find_element(By.LINK_TEXT, "Doctors").click()
+time.sleep(3)
+print("Click Create button")
+create_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Create')]")
+create_button.click()
+time.sleep(3)
+webdriver.ActionChains(driver).send_keys("123").perform()
+save_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Save')]")
+print("Click Save button and save Dr.123 ")
+save_button.click()
+print("Test case failed: a doctor's name can not be numbers ")
+time.sleep(3) 
+
 
 print("Test case 4: Positive - Register a vehicle")
 driver.get("http://localhost:8069/web#cids=1&default_active_id=mail.box_inbox&action=104&menu_id=75&active_id=mail.box_inbox")
@@ -36,9 +79,9 @@ menu_button = driver.find_element(By.XPATH, "/html/body/header/nav/div[1]/button
 print("Click Menu button")
 menu_button.click()
 time.sleep(3)  
-fleet_button = driver.find_element(By.XPATH, "/html/body/header/nav/div[1]/div/a[2]")
-print("Click Fleet button")
+fleet_button = driver.find_element(By.XPATH, "//a[contains(@class, 'o_app') and contains(text(), 'Fleet')]")
 fleet_button.click()
+print("Click Fleet button")
 time.sleep(3) 
 create_button = driver.find_element(By.XPATH, "//button[@title='Create record']")
 print("Click Create button")
@@ -51,22 +94,21 @@ if input_area is not None:
 else:
     print("Not Found. Closing program.")
     driver.quit() 
-
 time.sleep(3)
-save_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Save')]")
 print("Click Save button")
+save_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Save')]")
 save_button.click()
 time.sleep(3)  
-menu_button = driver.find_element(By.XPATH, "/html/body/header/nav/div[1]/button/i")
 menu_button.click()
+print("Click Menu button")
 time.sleep(3)  
-fleet_button = driver.find_element(By.XPATH, "/html/body/header/nav/div[1]/div/a[2]")
+fleet_button = driver.find_element(By.XPATH, "//a[contains(text(), 'Fleet')]")
 fleet_button.click()
-time.sleep(3) 
-
-registered_section = driver.find_element(By.XPATH, "//span[contains(text(), 'Registered')]/ancestor::div[contains(@class, 'o_kanban_group')]")
-entries = registered_section.find_elements(By.XPATH, ".//div[contains(@class, 'oe_kanban_details')]")
-audi_a1_present = any("Audi/A1" in entry.text for entry in entries)
+print("Click Fleet button")
+time.sleep(3)
+registered_section = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@aria-labelledby='kanban_header_3'][@data-id='3']")))
+audi_elements = registered_section.find_elements(By.XPATH, ".//span[contains(text(), 'Audi')]")
+audi_a1_present = len(audi_elements) > 0
 if audi_a1_present:
     print("Test Passed: Audi/A1 is present under Registered.")
 else:
